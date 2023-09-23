@@ -8,11 +8,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { MemberShipsModule } from 'src/member-ships/member-ships.module';
+import { StorageService } from 'src/storage/storage.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]),MemberShipsModule],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, FirebaseService, FirebaseAuthGuard],
+  providers: [AuthService, UsersService, StorageService,FirebaseService, FirebaseAuthGuard],
   exports: [AuthService]
 })
 export class AuthModule { }

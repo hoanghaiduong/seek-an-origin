@@ -42,6 +42,8 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, '..', 'public')); // cấu hình thư mục chứa tài nguyên tĩnh
   app.setBaseViewsDir(path.join(__dirname, '..', 'views')); // cấu hình thư mục chứa các view template
   app.setViewEngine('hbs'); // cấu hình view engine sử dụng Handlebars
+  Logger.warn(path.join(__dirname, '..', 'public'))
+
   await app.listen(configService.get("PORT"), () => {
     Logger.log(
       `Listening at http://localhost:${configService.get<number>("PORT")}`,
