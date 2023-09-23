@@ -31,7 +31,7 @@ export class StorageService implements OnModuleInit {
         const imagePath = await this.buildImageFilePath(type, imageName);
         await sharp(file.buffer).toFile(imagePath);
 
-        // console.log('chạy voà đây', imagePath.replace(/\\/g, '/').replace('public/', '/uploads/'))
+       
         return imagePath.replace(/\\/g, '/').replace(patch, '/uploads/');
       default:
 

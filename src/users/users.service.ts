@@ -13,33 +13,20 @@ import { Meta } from 'src/common/pagination/meta.dto';
 export class UsersService {
   constructor(@InjectRepository(User)
   private readonly userRepository: Repository<User>,
-    private readonly memberShipService: MemberShipsService
+
   ) {
 
   }
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    try {
-      const member = await this.memberShipService.findOne(createUserDto.memberShipId);
-      const creating = this.userRepository.create({
-        ...createUserDto,
-        memberShip: member
-      });
-      return await this.userRepository.save(creating);
-    } catch (error) {
-      throw new BadRequestException("Error creating user")
-    }
-  }
+
   async findAll(pagination: Pagination): Promise<PaginationModel<User>> {
     const [entities, itemCount] = await this.userRepository.findAndCount({
-      where: {
-        email: ILike(`%${pagination.search}%`)
-      },
       order: {
         createdAt: pagination.order
       },
       take: pagination.take,
       skip: pagination.skip,
-      relations: ['memberShip']
+      relations: ['memberShip'],
+
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<User>(entities, meta);

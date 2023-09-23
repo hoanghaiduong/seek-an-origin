@@ -16,6 +16,11 @@ export class User extends DateTimeEntity {
     phoneNumber: string;
 
     @Column({
+        nullable: false,
+    })
+    photoURL: string;
+
+    @Column({
         nullable: true,
     })
     displayName: string;
@@ -31,12 +36,6 @@ export class User extends DateTimeEntity {
         nullable: true,
     })
     disabled: boolean;
-
-    @Column({
-        type: 'jsonb',
-        nullable: true,
-    })
-    firebase: object;
 
     @Column({
         nullable: false,
