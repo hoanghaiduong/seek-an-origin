@@ -9,6 +9,7 @@ import { Note } from 'src/common/decorators/description.decorator';
 import { ApiFile, ApiFiles } from 'src/common/decorators/file.decorator';
 import { FileTypes } from 'src/common/enum/file';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { SignInDTO } from './dto/sign-in-auth.dto';
 
 @Controller('auth')
 @ApiTags('API AUTHENTICATION')
@@ -28,8 +29,11 @@ export class AuthController {
   }
 
   @Post('signin')
-  @Note("Required Token and body parameters")
-  async signIn(@Req() req: any): Promise<User> {
-    return await this.authService.signIn(req?.user);
+  @Note("Required Token and body parameters | có thể đăng nhập bằng email với mật khẩu hoặc số điện thoại với mật khẩu")
+  async signIn(@Req() req: any,@Body() dto:SignInDTO): Promise<User> {
+    return await this.authService.signIn({
+      ...dto,
+      user: req.user
+    });
   }
 }

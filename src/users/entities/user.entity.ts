@@ -50,4 +50,8 @@ export class User extends DateTimeEntity {
 
     @ManyToOne(() => MemberShip, memberShip => memberShip.users)
     memberShip: MemberShip;
+    
+    async comparePassword(candidatePassword: string): Promise<boolean> {
+        return bcrypt.compare(candidatePassword, this.password);
+    }
 }

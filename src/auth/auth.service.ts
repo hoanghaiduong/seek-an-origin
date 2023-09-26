@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from 'src/users/entities/user.entity';
@@ -21,7 +21,12 @@ export class AuthService {
   async signUp(dto: CreateAuthDto): Promise<User | any> {
     // console.log(dto.user.uid)
     const userDatabase = await this.userService.findOneNotException(dto.user.uid);
-    if (!userDatabase) {
+    if (userDatabase) {
+      throw new ConflictException({
+        message: 'Account already exists for user ' + dto.user.uid,
+      })
+    }
+    else {
       // upload ảnh
       const image = await this.storageService.uploadFile(ImageTypes.CARD_USER, dto.photoURL);
       const memberShip = await this.memberShipService.findOne(dto.memberShipId);
@@ -30,15 +35,26 @@ export class AuthService {
         uid: dto.user.uid,
         photoURL: image,
         memberShip: memberShip,
-     
-
       });
       return await this.userRepository.save(newUser);
     }
-    return userDatabase;
   }
   async signIn(req: any): Promise<User | any> {
 
+    const user = await this.userRepository.findOne({
+      where: {
+        phoneNumber: req.phoneNumber,
+        email: req.email,
+      }
+    })
+    if (!user) throw new NotFoundException({
+      statusCode: 404,
+      message: 'Không tìm thấy tài khoản'
+    });
+    if (user && !(await user.comparePassword(req.password))) {
+      throw new BadRequestException('Password does not match with the password of the user');
+    }
+    return user;
   }
 
 }
