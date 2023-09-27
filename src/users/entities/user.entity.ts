@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { DateTimeEntity } from 'src/common/entities/DateTime.entity';
@@ -44,9 +44,11 @@ export class User extends DateTimeEntity {
     password: string;
 
     @BeforeInsert()
+    @BeforeUpdate()
     async hashPassword() {
         this.password = await bcrypt.hash(this.password, 10);
     }
+    
 
     @ManyToOne(() => MemberShip, memberShip => memberShip.users)
     memberShip: MemberShip;

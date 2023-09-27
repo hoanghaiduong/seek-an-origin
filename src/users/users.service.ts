@@ -41,6 +41,15 @@ export class UsersService {
     if (!user) throw new NotFoundException(`User ${uid} not found`);
     return user
   }
+  async findOneWithPhoneNumber(phoneNumber: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: {
+        phoneNumber
+      }
+    })
+    if (!user) throw new NotFoundException(`Phone ${phoneNumber} not found`);
+    return user
+  }
   async findOneNotException(uid: string): Promise<User | boolean> {
     const user = await this.userRepository.findOne({
       where: {
@@ -51,11 +60,5 @@ export class UsersService {
     return user
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  
 }

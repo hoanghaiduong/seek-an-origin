@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UploadedFile, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -10,6 +10,7 @@ import { ApiFile, ApiFiles } from 'src/common/decorators/file.decorator';
 import { FileTypes } from 'src/common/enum/file';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { SignInDTO } from './dto/sign-in-auth.dto';
+import * as admin from 'firebase-admin';
 
 @Controller('auth')
 @ApiTags('API AUTHENTICATION')
@@ -30,10 +31,21 @@ export class AuthController {
 
   @Post('signin')
   @Note("Required Token and body parameters | có thể đăng nhập bằng email với mật khẩu hoặc số điện thoại với mật khẩu")
-  async signIn(@Req() req: any,@Body() dto:SignInDTO): Promise<User> {
+  async signIn(@Req() req: any, @Body() dto: SignInDTO): Promise<User> {
     return await this.authService.signIn({
       ...dto,
       user: req.user
     });
+  }
+
+
+  @Post('forgotPassword')
+  @Note("API Quên mật khẩu")
+  async forgotPassword(@Body() dto:SignInDTO): Promise<any> {
+    try {
+      return await this.authService.forgotPassword(dto);
+    } catch (error) {
+      throw error;
+    }
   }
 }

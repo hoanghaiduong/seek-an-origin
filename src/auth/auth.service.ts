@@ -8,6 +8,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { StorageService } from 'src/storage/storage.service';
 import { ImageTypes } from 'src/common/enum/file';
 import { MemberShipsService } from 'src/member-ships/member-ships.service';
+import { SignInDTO } from './dto/sign-in-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,6 +56,20 @@ export class AuthService {
       throw new BadRequestException('Password does not match with the password of the user');
     }
     return user;
+  }
+  async forgotPassword({ phoneNumber, password }: SignInDTO): Promise<User | any> {
+    const user = await this.userService.findOneWithPhoneNumber(phoneNumber);
+
+    const merged = this.userRepository.merge(user, {
+      password: password
+    });
+    const updated = await this.userRepository.update(user.uid, merged);
+    if (!updated) throw new BadRequestException('Update user failed');
+    // const merged = await this.userRepository.update(user.uid, {
+    //   ...user,
+    //   password
+    // })
+    return merged;
   }
 
 }
