@@ -20,7 +20,8 @@ export class AuthService {
     private memberShipService: MemberShipsService
   ) { }
   async signUp(dto: CreateAuthDto): Promise<User | any> {
-    // console.log(dto.user.uid)
+
+
     const userDatabase = await this.userService.findOneNotException(dto.user.uid);
     if (userDatabase) {
       throw new ConflictException({
@@ -36,8 +37,11 @@ export class AuthService {
         uid: dto.user.uid,
         photoURL: image,
         memberShip: memberShip,
+        phoneNumber: dto.user?.phoneNumber||dto.phoneNumber,
+        password: dto.password
       });
-      return await this.userRepository.save(newUser);
+     
+     return await this.userRepository.save(newUser);
     }
   }
   async signIn(req: any): Promise<User | any> {
@@ -57,11 +61,11 @@ export class AuthService {
     }
     return user;
   }
-  async forgotPassword({ phoneNumber, password }: SignInDTO): Promise<User | any> {
-    const user = await this.userService.findOneWithPhoneNumber(phoneNumber);
+  async forgotPassword(req: any): Promise<User | any> {
+    const user = await this.userService.findOneWithPhoneNumber(req.user.phoneNumber);
 
     const merged = this.userRepository.merge(user, {
-      password: password
+      password: req.password
     });
     const updated = await this.userRepository.update(user.uid, merged);
     if (!updated) throw new BadRequestException('Update user failed');

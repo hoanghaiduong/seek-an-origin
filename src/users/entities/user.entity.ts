@@ -46,13 +46,14 @@ export class User extends DateTimeEntity {
     @BeforeInsert()
     @BeforeUpdate()
     async hashPassword() {
-        this.password = await bcrypt.hash(this.password, 10);
+        this.password = await bcrypt.hash(this.password, 12);
     }
-    
+
+
 
     @ManyToOne(() => MemberShip, memberShip => memberShip.users)
     memberShip: MemberShip;
-    
+
     async comparePassword(candidatePassword: string): Promise<boolean> {
         return bcrypt.compare(candidatePassword, this.password);
     }

@@ -11,6 +11,7 @@ import { FileTypes } from 'src/common/enum/file';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { SignInDTO } from './dto/sign-in-auth.dto';
 import * as admin from 'firebase-admin';
+import { ForgotPasswordDTO } from './dto/forgot-password.dto';
 
 @Controller('auth')
 @ApiTags('API AUTHENTICATION')
@@ -41,9 +42,12 @@ export class AuthController {
 
   @Post('forgotPassword')
   @Note("API Quên mật khẩu")
-  async forgotPassword(@Body() dto:SignInDTO): Promise<any> {
+  async forgotPassword(@Req() req: any, @Body() dto: ForgotPasswordDTO): Promise<User | any> {
     try {
-      return await this.authService.forgotPassword(dto);
+      return await this.authService.forgotPassword({
+        user: req.user,
+        password: dto.password
+      });
     } catch (error) {
       throw error;
     }
