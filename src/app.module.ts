@@ -9,6 +9,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MemberShipsModule } from './member-ships/member-ships.module';
 import { StorageModule } from './storage/storage.module';
+import { ProductionAreaModule } from './production-area/production-area.module';
+import { TypeModelModule } from './type-model/type-model.module';
+import { UnitTypeModule } from './unit-type/unit-type.module';
 
 
 
@@ -25,6 +28,9 @@ import { StorageModule } from './storage/storage.module';
     UsersModule,
     MemberShipsModule,
     StorageModule,
+    ProductionAreaModule,
+    TypeModelModule,
+    UnitTypeModule,
 
   ],
   controllers: [AppController],

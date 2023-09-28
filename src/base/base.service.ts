@@ -1,20 +1,68 @@
-import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
-import { DeepPartial, FindOneOptions, Repository } from 'typeorm';
+import { BadGatewayException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { DeepPartial, EntitySchema, EntityTarget, FindOneOptions, FindOptionsOrder, ILike, QueryRunner, Repository } from 'typeorm';
 import { BaseEntity } from './entities/base.entity';
 import { CreateBaseDto } from './dto/create-base.dto';
 import { UpdateBaseDto } from './dto/update-base.dto';
+import { Pagination } from 'src/common/pagination/pagination.dto';
+import { PaginationModel } from 'src/common/pagination/pagination.model';
+import { Meta } from 'src/common/pagination/meta.dto';
 
 
 @Injectable()
 export abstract class BaseService<T extends BaseEntity> {
   constructor(private readonly repository: Repository<T>) { }
 
-  async findAll(): Promise<T[]> {
+  async initialData(data: T[]): Promise<{ added: T[], skipped: string[], errors: string[] }> {
+
+    const addedTypes: T[] = [];
+    const skippedTypes: string[] = [];
+    const errorMessages: string[] = [];
+    const queryRunner: QueryRunner = this.repository.manager.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      return <Promise<T[]>>this.repository.find();
+      for (const entity of data) {
+        const existingType = await queryRunner.manager.findOne(this.repository.target, {
+          where: {
+            name: entity.name as any,
+          },
+        });
+        if (!existingType) {
+          const newEntity = await queryRunner.manager.save(this.repository.target, entity);
+          addedTypes.push(newEntity);
+          Logger.error(`Added new : ${entity.name}`);
+        } else {
+          skippedTypes.push(entity.name);
+          Logger.error(`Already exists: ${entity.name}`);
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return { added: addedTypes, skipped: skippedTypes, errors: errorMessages };
     } catch (error) {
-      throw new BadGatewayException(error);
+      errorMessages.push(error.message);
+      Logger.error(`Error during transaction: ${error}`);
+      await queryRunner.rollbackTransaction();
+      return { added: addedTypes, skipped: skippedTypes, errors: errorMessages };
+    } finally {
+      await queryRunner.release();
     }
+  }
+  async findAll(pagination: Pagination): Promise<PaginationModel<T>> {
+
+    const [entities, itemCount] = await this.repository.findAndCount({
+      take: pagination.take,
+      skip: pagination.skip,
+      where: {
+        name: ILike(`%${pagination.search}%`) as any
+      },
+      order: {
+        name: pagination.order as any
+      }
+    });
+    const meta = new Meta({ itemCount, pagination });
+    return new PaginationModel<T>(entities, meta);
   }
   async findOne(id: string): Promise<T> {
     try {

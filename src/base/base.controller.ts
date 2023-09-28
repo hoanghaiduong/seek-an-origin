@@ -4,14 +4,16 @@ import { BaseService } from './base.service';
 import { BaseEntity } from './entities/base.entity';
 import { UpdateBaseDto } from './dto/update-base.dto';
 import { CreateBaseDto } from './dto/create-base.dto';
+import { PaginationModel } from 'src/common/pagination/pagination.model';
+import { Pagination } from 'src/common/pagination/pagination.dto';
 
 @Controller()
 export abstract class BaseController<T extends BaseEntity> {
   constructor(private readonly baseService: BaseService<T>) { }
 
   @Get('gets')
-  async findAll(): Promise<T[]> {
-    return this.baseService.findAll();
+  async findAll(@Query() pagination:Pagination): Promise<PaginationModel<T>> {
+    return await this.baseService.findAll(pagination);
   }
 
   @Get('get')
