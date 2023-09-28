@@ -55,6 +55,6 @@ export class User extends DateTimeEntity {
     memberShip: MemberShip;
 
     async comparePassword(candidatePassword: string): Promise<boolean> {
-        return bcrypt.compare(candidatePassword, this.password);
+        return await bcrypt.compare(candidatePassword, this.password);
     }
 }

@@ -12,6 +12,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { SignInDTO } from './dto/sign-in-auth.dto';
 import * as admin from 'firebase-admin';
 import { ForgotPasswordDTO } from './dto/forgot-password.dto';
+import { ChangePasswordDTO } from './dto/change-password.dto';
 
 @Controller('auth')
 @ApiTags('API AUTHENTICATION')
@@ -51,5 +52,14 @@ export class AuthController {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Post("changePassword")
+  @Note("API Đổi mật khẩu")
+  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDTO): Promise<User | any> {
+    return await this.authService.resetPassword({
+      ...dto,
+      user: req.user
+    });
   }
 }

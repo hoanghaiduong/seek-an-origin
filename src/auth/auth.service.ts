@@ -9,6 +9,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { ImageTypes } from 'src/common/enum/file';
 import { MemberShipsService } from 'src/member-ships/member-ships.service';
 import { SignInDTO } from './dto/sign-in-auth.dto';
+import { ChangePasswordDTO } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -37,11 +38,11 @@ export class AuthService {
         uid: dto.user.uid,
         photoURL: image,
         memberShip: memberShip,
-        phoneNumber: dto.user?.phoneNumber||dto.phoneNumber,
+        phoneNumber: dto.user?.phoneNumber || dto.phoneNumber,
         password: dto.password
       });
-     
-     return await this.userRepository.save(newUser);
+
+      return await this.userRepository.save(newUser);
     }
   }
   async signIn(req: any): Promise<User | any> {
@@ -73,6 +74,22 @@ export class AuthService {
     //   ...user,
     //   password
     // })
+    return merged;
+  }
+
+  async resetPassword(dto: ChangePasswordDTO): Promise<User | any> {
+    const user = await this.userService.findOne(dto.user.uid);
+
+    const check = await user.comparePassword(dto.oldPassword);
+    if (user?.phoneNumber && !check)//check old password is correct
+    {
+      throw new BadRequestException('Reset password failed, old password is incorrect');
+    } 
+    const merged = this.userRepository.merge(user, {
+      password: dto.newPassword
+    })
+    const updated = await this.userRepository.update(user.uid, merged);
+    if (!updated) throw new BadRequestException("Update password failed");
     return merged;
   }
 
