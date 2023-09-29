@@ -2,8 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ProductionAreaService } from './production-area.service';
 import { CreateProductionAreaDto } from './dto/create-production-area.dto';
 import { UpdateProductionAreaDto } from './dto/update-production-area.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('production-area')
+@ApiTags("API Vùng sản xuất")
 export class ProductionAreaController {
   constructor(private readonly productionAreaService: ProductionAreaService) {}
 

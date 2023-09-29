@@ -14,10 +14,16 @@ export class ProductionArea {
     // @Column()
     // typeModel: string;
     @Column({
-        type:'float'
+        type:'float',
+        nullable:false
     })
     acreage: number;
 
     //@Column()
     //unitType:string;
+    @Column({
+        nullable:false,
+        default:false
+    })
+    isPublic:boolean;
 }

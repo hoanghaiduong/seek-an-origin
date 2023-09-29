@@ -12,6 +12,11 @@ import { StorageModule } from './storage/storage.module';
 import { ProductionAreaModule } from './production-area/production-area.module';
 import { TypeModelModule } from './type-model/type-model.module';
 import { UnitTypeModule } from './unit-type/unit-type.module';
+import { RelationLicenseModule } from './relation-license/relation-license.module';
+import { ProvincesModule } from './provinces/provinces.module';
+import { DistrictsModule } from './districts/districts.module';
+import { WardsModule } from './wards/wards.module';
+import { AddtionalLicenseModule } from './addtional-license/addtional-license.module';
 
 
 
@@ -31,6 +36,11 @@ import { UnitTypeModule } from './unit-type/unit-type.module';
     ProductionAreaModule,
     TypeModelModule,
     UnitTypeModule,
+    RelationLicenseModule,
+    ProvincesModule,
+    DistrictsModule,
+    WardsModule,
+    AddtionalLicenseModule,
 
   ],
   controllers: [AppController],

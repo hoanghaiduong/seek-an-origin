@@ -27,7 +27,8 @@ export class AuthController {
     return await this.authService.signUp({
       ...dto,
       user: req.user,
-      photoURL: image
+      photoURL: image,
+      
     });
   }
 

@@ -4,7 +4,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { ILike, Repository } from 'typeorm';
-import { MemberShipsService } from 'src/member-ships/member-ships.service';
 import { PaginationModel } from 'src/common/pagination/pagination.model';
 import { Pagination } from 'src/common/pagination/pagination.dto';
 import { Meta } from 'src/common/pagination/meta.dto';
@@ -26,7 +25,9 @@ export class UsersService {
       take: pagination.take,
       skip: pagination.skip,
       relations: ['memberShip'],
-
+      where: {
+        displayName: pagination.search ? ILike(`%${pagination.search}%`) : null
+      }
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<User>(entities, meta);
@@ -60,5 +61,5 @@ export class UsersService {
     return user
   }
 
-  
+
 }

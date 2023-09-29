@@ -38,8 +38,9 @@ export class AuthService {
         uid: dto.user.uid,
         photoURL: image,
         memberShip: memberShip,
-        phoneNumber: dto.user?.phoneNumber || dto.phoneNumber,
-        password: dto.password
+        phoneNumber: dto.user?.phone_number || dto.phone_number,
+        password: dto.password,
+        email: dto.user?.email || dto.email,
       });
 
       return await this.userRepository.save(newUser);
@@ -84,7 +85,7 @@ export class AuthService {
     if (user?.phoneNumber && !check)//check old password is correct
     {
       throw new BadRequestException('Reset password failed, old password is incorrect');
-    } 
+    }
     const merged = this.userRepository.merge(user, {
       password: dto.newPassword
     })

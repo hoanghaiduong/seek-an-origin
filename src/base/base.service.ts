@@ -55,7 +55,7 @@ export abstract class BaseService<T extends BaseEntity> {
       take: pagination.take,
       skip: pagination.skip,
       where: {
-        name: ILike(`%${pagination.search}%`) as any
+        name: pagination.search ? ILike(`%${pagination.search}%`) as any : null
       },
       order: {
         name: pagination.order as any

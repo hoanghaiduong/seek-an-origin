@@ -16,9 +16,9 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsPhoneNumber("VI", { message: 'Invalid phone number (VI) +84' })
-    phoneNumber: string;
+    phone_number: string;
 
-    emailVerified: boolean;
+    emailVerified?: boolean;
 
 
 
