@@ -1,36 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { WardsService } from './wards.service';
 import { CreateWardDto } from './dto/create-ward.dto';
 import { UpdateWardDto } from './dto/update-ward.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { BaseController } from 'src/base/base.controller';
+import { Ward } from './entities/ward.entity';
+import { Pagination } from 'src/common/pagination/pagination.dto';
+import { PaginationModel } from 'src/common/pagination/pagination.model';
 
 @Controller('wards')
 @ApiTags("API Phường xã")
-export class WardsController {
-  constructor(private readonly wardsService: WardsService) { }
-
-  @Post()
-  create(@Body() createWardDto: CreateWardDto) {
-    return this.wardsService.create(createWardDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.wardsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.wardsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWardDto: UpdateWardDto) {
-    return this.wardsService.update(+id, updateWardDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wardsService.remove(+id);
-  }
+export class WardsController extends BaseController<Ward>{
+  constructor(private readonly wardsService: WardsService) {
+    super(wardsService);
+   }
+   @Get('getListDistrictByProvinceID')
+   async getListWardsByDistrictID(@Query('districtId') districtId: string, @Query() pagination: Pagination): Promise<PaginationModel<Ward>> {
+     return await this.wardsService.getListWardsByDistrictID(districtId, pagination)
+   }
+ 
 }

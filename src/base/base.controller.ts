@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Query, UploadedFile } from '@nestjs/common';
 import { BaseService } from './base.service';
 
 import { BaseEntity } from './entities/base.entity';
@@ -6,11 +6,22 @@ import { UpdateBaseDto } from './dto/update-base.dto';
 import { CreateBaseDto } from './dto/create-base.dto';
 import { PaginationModel } from 'src/common/pagination/pagination.model';
 import { Pagination } from 'src/common/pagination/pagination.dto';
+import { ApiFile } from 'src/common/decorators/file.decorator';
+import { FileTypes } from 'src/common/enum/file';
+import { BaseFileDTO } from './dto/base-file.dto';
 
 @Controller()
 export abstract class BaseController<T extends BaseEntity> {
   constructor(private readonly baseService: BaseService<T>) { }
 
+  @Post('upload')
+  @ApiFile('file', FileTypes.EXCEL)
+  async uploadDataExcel(@Body() dto: BaseFileDTO, @UploadedFile() file: Express.Multer.File): Promise<any> {
+    return await this.baseService.uploadDataExcel({
+      ...dto,
+      file: file
+    });
+  }
   @Get('gets')
   async findAll(@Query() pagination:Pagination): Promise<PaginationModel<T>> {
     return await this.baseService.findAll(pagination);
@@ -35,4 +46,5 @@ export abstract class BaseController<T extends BaseEntity> {
   async delete(@Query('id') id: string): Promise<Object> {
     return await this.baseService.delete(id);
   }
+  
 }

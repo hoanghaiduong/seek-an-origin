@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CreateDistrictDto {
+export class BaseFileDTO {
     @ApiProperty({
-        type: 'string',
-        format: "binary"
+        type: "string",
+        format: "binary",
     })
     file: Express.Multer.File
 }

@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class MemberShip extends BaseEntity {
+  
     @OneToMany(() => User, users => users.memberShip)
     users: User[]
 }

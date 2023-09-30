@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DeepPartial, EntitySchema, EntityTarget, FindOneOptions, FindOptionsOrder, ILike, QueryRunner, Repository } from 'typeorm';
 import { BaseEntity } from './entities/base.entity';
 import { CreateBaseDto } from './dto/create-base.dto';
@@ -7,7 +7,8 @@ import { Pagination } from 'src/common/pagination/pagination.dto';
 import { PaginationModel } from 'src/common/pagination/pagination.model';
 import { Meta } from 'src/common/pagination/meta.dto';
 
-
+import * as Excel from 'exceljs'
+import { BaseFileDTO } from './dto/base-file.dto';
 @Injectable()
 export abstract class BaseService<T extends BaseEntity> {
   constructor(private readonly repository: Repository<T>) { }
@@ -59,7 +60,8 @@ export abstract class BaseService<T extends BaseEntity> {
       },
       order: {
         name: pagination.order as any
-      }
+      },
+      
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<T>(entities, meta);
@@ -80,7 +82,51 @@ export abstract class BaseService<T extends BaseEntity> {
     }
   }
 
+  async uploadDataExcel(dto: BaseFileDTO): Promise<void | any> {
+    const workbook = new Excel.Workbook();
+    const filePath = dto.file;
+    try {
 
+      // Load the workbook
+      await workbook.xlsx.load(filePath.buffer);
+
+      // Get the worksheet
+      const worksheet = workbook.getWorksheet(1);
+
+
+      const data = [];
+      const columns = {};
+
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) {
+          //đếm nếu dòng 1 là header thì lấy tên header
+          // Extract column names from the header row (rowNumber = 1)
+          row.eachCell((cell, colNumber) => {
+            //lặp ra mỗi ô(cell) trong dòng để lấy index và tên cột
+            columns[colNumber] = cell.value as string;
+          });
+        } else {
+          //lấy các dòng bỏ header
+          // Extract data from subsequent rows and use column names from the header row
+          const rowData = {};
+          row.eachCell((cell, colNumber) => {
+            rowData[columns[colNumber]] = cell.value as string;
+          });
+
+          data.push({ ...rowData });
+        }
+      });
+     
+      const creating = this.repository.create(data);
+
+      return await this.repository.save(creating);
+
+
+    } catch (error) {
+      Logger.error(error)
+      throw new BadRequestException(error.message);
+    }
+  }
 
   async create(dto: CreateBaseDto): Promise<T> {
     try {

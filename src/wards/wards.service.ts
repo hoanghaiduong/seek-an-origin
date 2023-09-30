@@ -1,26 +1,52 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWardDto } from './dto/create-ward.dto';
 import { UpdateWardDto } from './dto/update-ward.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Ward } from './entities/ward.entity';
+import { ILike, Repository } from 'typeorm';
+import { BaseService } from 'src/base/base.service';
+import { Pagination } from 'src/common/pagination/pagination.dto';
+import { PaginationModel } from 'src/common/pagination/pagination.model';
+import { DistrictsService } from 'src/districts/districts.service';
+import { Meta } from 'src/common/pagination/meta.dto';
 
 @Injectable()
-export class WardsService {
-  create(createWardDto: CreateWardDto) {
-    return 'This action adds a new ward';
-  }
+export class WardsService extends BaseService<Ward>{
+   constructor(@InjectRepository(Ward) private wardsRepository: Repository<Ward>, private districtService: DistrictsService) {
+      super(wardsRepository);
+   }
+   async getListWardsByDistrictID(districtId: string, pagination: Pagination): Promise<PaginationModel<Ward> | any> {
+      const district = await this.districtService.findOne(districtId);
 
-  findAll() {
-    return `This action returns all wards`;
-  }
+      const [entities, itemCount] = await this.wardsRepository.findAndCount({
+         take: pagination.take,
+         skip: pagination.skip,
+         where: {
+            district,
+            name: pagination.search ? ILike(`%${pagination.search}%`) : null
+         },
+         order: {
+            id: pagination.order
+         },
 
-  findOne(id: number) {
-    return `This action returns a #${id} ward`;
-  }
+      });
+      const meta = new Meta({ itemCount, pagination });
+      return new PaginationModel<Ward>(entities, meta);
+   }
+   async findAll(pagination: Pagination): Promise<PaginationModel<Ward>> {
 
-  update(id: number, updateWardDto: UpdateWardDto) {
-    return `This action updates a #${id} ward`;
-  }
+      const [entities, itemCount] = await this.wardsRepository.findAndCount({
+         take: pagination.take,
+         skip: pagination.skip,
+         where: {
+            name: pagination.search ? ILike(`%${pagination.search}%`) : null
+         },
+         order: {
+            id: pagination.order
+         },
 
-  remove(id: number) {
-    return `This action removes a #${id} ward`;
-  }
+      });
+      const meta = new Meta({ itemCount, pagination });
+      return new PaginationModel<Ward>(entities, meta);
+   }
 }
