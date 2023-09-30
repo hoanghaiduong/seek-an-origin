@@ -14,7 +14,7 @@ export class WardsController extends BaseController<Ward>{
   constructor(private readonly wardsService: WardsService) {
     super(wardsService);
    }
-   @Get('getListDistrictByProvinceID')
+   @Get('getListDistrictByDistrictID')
    async getListWardsByDistrictID(@Query('districtId') districtId: string, @Query() pagination: Pagination): Promise<PaginationModel<Ward>> {
      return await this.wardsService.getListWardsByDistrictID(districtId, pagination)
    }
