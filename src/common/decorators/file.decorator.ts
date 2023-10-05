@@ -24,6 +24,21 @@ export const ApiFile = (
     ApiConsumes("multipart/form-data")
   );
 };
+export const ApiMultipleFieldFiles = (
+  fieldConfigs: {
+    name: string;
+    maxCount: number;
+  }[] = []
+) => {
+  return applyDecorators(
+    UseInterceptors(FileFieldsInterceptor(fieldConfigs, {
+      storage: memoryStorage(),
+      preservePath: true,
+    })),
+    ApiConsumes("multipart/form-data")
+  )
+
+};
 
 export const ApiFiles = (
   fieldName: string = "files",
@@ -32,10 +47,10 @@ export const ApiFiles = (
 ) => {
   return applyDecorators(
     UseInterceptors(FilesInterceptor(fieldName, maxCount, {
-        fileFilter: fileMimetypeFilter(CodeUtil.getMineType(minType)),
-        storage: memoryStorage(),
-         preservePath: true
-      }
+      fileFilter: fileMimetypeFilter(CodeUtil.getMineType(minType)),
+      storage: memoryStorage(),
+      preservePath: true
+    }
     )),
     ApiConsumes("multipart/form-data")
   );

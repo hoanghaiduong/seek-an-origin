@@ -23,7 +23,7 @@ export abstract class BaseController<T extends BaseEntity> {
     });
   }
   @Get('gets')
-  async findAll(@Query() pagination:Pagination): Promise<PaginationModel<T>> {
+  async findAll(@Query() pagination: Pagination): Promise<PaginationModel<T>> {
     return await this.baseService.findAll(pagination);
   }
 
@@ -46,5 +46,6 @@ export abstract class BaseController<T extends BaseEntity> {
   async delete(@Query('id') id: string): Promise<Object> {
     return await this.baseService.delete(id);
   }
-  
+
 }
+

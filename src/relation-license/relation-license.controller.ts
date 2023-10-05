@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { RelationLicenseService } from './relation-license.service';
 import { CreateRelationLicenseDto } from './dto/create-relation-license.dto';
 import { UpdateRelationLicenseDto } from './dto/update-relation-license.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @Controller('relation-license')
-@ApiTags("Giấy phép liên quan")
+@ApiTags("Giấy phép liên quan vùng sản xuất")
 export class RelationLicenseController {
-  constructor(private readonly relationLicenseService: RelationLicenseService) {}
+  constructor(private readonly relationLicenseService: RelationLicenseService) { }
 
   @Post()
   create(@Body() createRelationLicenseDto: CreateRelationLicenseDto) {
@@ -20,17 +20,17 @@ export class RelationLicenseController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Query('id') id: string) {
     return this.relationLicenseService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRelationLicenseDto: UpdateRelationLicenseDto) {
+  update(@Query('id') id: string, @Body() updateRelationLicenseDto: UpdateRelationLicenseDto) {
     return this.relationLicenseService.update(+id, updateRelationLicenseDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Query('id') id: string) {
     return this.relationLicenseService.remove(+id);
   }
 }

@@ -17,6 +17,11 @@ import { ProvincesModule } from './provinces/provinces.module';
 import { DistrictsModule } from './districts/districts.module';
 import { WardsModule } from './wards/wards.module';
 import { AddtionalLicenseModule } from './addtional-license/addtional-license.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { ShipmentModule } from './shipment/shipment.module';
+import { ProductModule } from './product/product.module';
+import { BusinessModule } from './business/business.module';
+import { MaterialsModule } from './materials/materials.module';
 
 
 
@@ -41,6 +46,11 @@ import { AddtionalLicenseModule } from './addtional-license/addtional-license.mo
     DistrictsModule,
     WardsModule,
     AddtionalLicenseModule,
+    TransactionModule,
+    ShipmentModule,
+    ProductModule,
+    BusinessModule,
+    MaterialsModule,
 
   ],
   controllers: [AppController],

@@ -12,11 +12,12 @@ export class User extends DateTimeEntity {
 
     @Column({
         nullable: false,
+        unique: true
     })
     phoneNumber: string;
-
     @Column({
         nullable: false,
+
     })
     photoURL: string;
 
@@ -28,6 +29,7 @@ export class User extends DateTimeEntity {
     @Column({
         nullable: false,
         default: false,
+        unique: true
     })
     email: string;
 
@@ -37,6 +39,11 @@ export class User extends DateTimeEntity {
     })
     disabled: boolean;
 
+    @Column({
+        nullable: false,
+        default: false
+    })
+    emailVerified: boolean;
     @Column({
         nullable: false,
     })
@@ -57,4 +64,25 @@ export class User extends DateTimeEntity {
     async comparePassword(candidatePassword: string): Promise<boolean> {
         return await bcrypt.compare(candidatePassword, this.password);
     }
+    //THIẾU
+    //vùng sản xuất (+)
+    //thuộc nhà xưởng (+)
+
+
+    @Column({
+        nullable: true,
+    })
+    sepecificAddress: string; //Địa chỉ cụ thể
+    @Column({
+        nullable: true,
+    })
+    generalInformation: string; //Thông tin chung trong update profile
+    @Column({
+        nullable: true,
+    })
+    certificationPhoto: string;    //Hình ảnh chứng nhận 
+    @Column({
+        nullable: true,
+    })
+    careerTitle: string; //Chức danh 
 }

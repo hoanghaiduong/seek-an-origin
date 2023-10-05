@@ -2,10 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AddtionalLicenseService } from './addtional-license.service';
 import { CreateAddtionalLicenseDto } from './dto/create-addtional-license.dto';
 import { UpdateAddtionalLicenseDto } from './dto/update-addtional-license.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('addtional-license')
+@ApiTags("API Thông tin bổ sung vùng sản xuất")
 export class AddtionalLicenseController {
-  constructor(private readonly addtionalLicenseService: AddtionalLicenseService) {}
+  constructor(private readonly addtionalLicenseService: AddtionalLicenseService) { }
 
   @Post()
   create(@Body() createAddtionalLicenseDto: CreateAddtionalLicenseDto) {

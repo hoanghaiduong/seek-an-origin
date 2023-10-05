@@ -6,7 +6,7 @@ import { MemberShip } from './entities/member-ship.entity';
 import { ApiTags } from '@nestjs/swagger';
 
 @Controller('member-ships')
-@ApiTags("MemberShip")
+@ApiTags("API Quản lý vai trò thành viên")
 export class MemberShipsController extends BaseController<MemberShip>{
   constructor(private memberShipsService: MemberShipsService) {
     super(memberShipsService)
