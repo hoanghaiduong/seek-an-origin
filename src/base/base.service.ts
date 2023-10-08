@@ -61,7 +61,7 @@ export abstract class BaseService<T extends BaseEntity> {
       order: {
         name: pagination.order as any
       },
-      
+
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<T>(entities, meta);
@@ -116,7 +116,7 @@ export abstract class BaseService<T extends BaseEntity> {
           data.push({ ...rowData });
         }
       });
-     
+
       const creating = this.repository.create(data);
 
       return await this.repository.save(creating);

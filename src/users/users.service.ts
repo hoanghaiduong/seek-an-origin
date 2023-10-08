@@ -32,8 +32,11 @@ export class UsersService {
       skip: pagination.skip,
       relations: ['memberShip'],
       where: {
-        displayName: pagination.search ? ILike(`%${pagination.search}%`) : null
-      }
+
+        phoneNumber: pagination.search ? ILike(`%${pagination.search}%`) : null,
+
+      },
+      
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<User>(entities, meta);
