@@ -3,9 +3,12 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
+
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
-    constructor(private readonly firebaseService: FirebaseService) { }
+    constructor(private readonly firebaseService: FirebaseService,
+      
+    ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -24,6 +27,7 @@ export class FirebaseAuthGuard implements CanActivate {
             const decodedToken = await this.firebaseService.verifyIdToken(token);
 
             request.user = decodedToken;
+            request.uid = decodedToken.uid;
             return true;
         } catch (error) {
             throw new ForbiddenException({

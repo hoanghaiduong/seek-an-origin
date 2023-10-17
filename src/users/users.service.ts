@@ -24,6 +24,7 @@ export class UsersService {
   }
 
   async findAll(pagination: Pagination): Promise<PaginationModel<User>> {
+    const search = ILike(`%${pagination.search}%`);
     const [entities, itemCount] = await this.userRepository.findAndCount({
       order: {
         createdAt: pagination.order
@@ -31,12 +32,18 @@ export class UsersService {
       take: pagination.take,
       skip: pagination.skip,
       relations: ['memberShip'],
-      where: {
+      where: [
+        {
+          phoneNumber: search,
+        },
+        {
+          displayName: search,
+        },
+        {
+          email: search,
+        }
+      ]
 
-        phoneNumber: pagination.search ? ILike(`%${pagination.search}%`) : null,
-
-      },
-      
     });
     const meta = new Meta({ itemCount, pagination });
     return new PaginationModel<User>(entities, meta);

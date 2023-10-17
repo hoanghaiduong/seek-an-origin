@@ -28,7 +28,6 @@ export class AuthController {
       ...dto,
       user: req.user,
       photoURL: image,
-      
     });
   }
 

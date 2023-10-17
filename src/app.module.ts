@@ -22,6 +22,7 @@ import { ShipmentModule } from './shipment/shipment.module';
 import { ProductModule } from './product/product.module';
 import { BusinessModule } from './business/business.module';
 import { MaterialsModule } from './materials/materials.module';
+import { GroupPermissonModule } from './group-permisson/group-permisson.module';
 
 
 
@@ -51,6 +52,7 @@ import { MaterialsModule } from './materials/materials.module';
     ProductModule,
     BusinessModule,
     MaterialsModule,
+    GroupPermissonModule,
 
   ],
   controllers: [AppController],

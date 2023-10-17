@@ -14,8 +14,16 @@ export class MemberShipsService extends BaseService<MemberShip> implements OnMod
     super(memberTypeRepository);
   }
 
- 
 
+  async findOneByName(name: string): Promise<MemberShip> {
+    const memberShip = await this.memberTypeRepository.findOne({
+      where: {
+        name
+      }
+    })
+    return memberShip
+
+  }
   async onModuleInit(): Promise<void> {
     const memberShips = [
       { name: 'Cá nhân' },

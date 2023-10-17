@@ -13,7 +13,7 @@ export class CreateUserDto {
     })
     password: string;
 
-    @ApiProperty({ type: 'string', format: 'binary' })
+    @ApiProperty({ type: 'string', format: 'binary', required: false })
     photoURL: Express.Multer.File;
 
     @ApiProperty({ required: true })
@@ -34,5 +34,10 @@ export class CreateUserDto {
         required: true
     })
     memberShipId: string;
+
+    @ApiProperty({
+        required: false
+    })
+    careerTitle: string;
 }
 

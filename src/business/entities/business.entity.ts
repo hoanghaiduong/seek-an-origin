@@ -13,23 +13,27 @@ export class Business extends DateTimeEntity {
 
     @Column({
         type: 'text',
-        array: true
+        array: true,
+
     })
     avatar: string[];
     @Column({
         type: 'text',
-        array: true
+        array: true,
+        nullable: true
     })
     licenseBusiness: string[];
     @Column({
         type: 'text',
-        array: true
+        array: true,
+        nullable: true
     })
     certificate: string[];
-   
+
     @Column({
         type: 'text',
-        array: true
+        array: true,
+        nullable: true
     })
     inspectionPhoto: string[];
 
@@ -57,5 +61,5 @@ export class Business extends DateTimeEntity {
     typeModel: TypeModel
 
 
-  
+
 }
