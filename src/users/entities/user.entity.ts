@@ -16,7 +16,7 @@ export class User extends DateTimeEntity {
     })
     phoneNumber: string;
     @Column({
-        nullable: false,
+        nullable: true,
 
     })
     photoURL: string;
