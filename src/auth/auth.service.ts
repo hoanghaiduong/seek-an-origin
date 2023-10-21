@@ -1,8 +1,8 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { UsersService, findOneWith } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { StorageService } from 'src/storage/storage.service';
@@ -10,88 +10,168 @@ import { ImageTypes } from 'src/common/enum/file';
 import { MemberShipsService } from 'src/member-ships/member-ships.service';
 import { SignInDTO } from './dto/sign-in-auth.dto';
 import { ChangePasswordDTO } from './dto/change-password.dto';
+import { JwtService } from '@nestjs/jwt';
+import { TokenModel } from './models/Token.model';
+import { ConfigService } from '@nestjs/config';
+import { ApiException } from 'src/common/exception/api.exception';
+import { ErrorMessages } from 'src/exception/error.code';
+import * as bcrypt from 'bcrypt'
+import { SignUpDTO } from './dto/sign-up.dto';
+import { GroupPermissonService } from 'src/group-permisson/group-permisson.service';
+import { ForgotPasswordDTO } from './dto/forgot-password.dto';
+import * as admin from 'firebase-admin'
+import { SignUpSocialDTO } from './dto/sign-up-social.dto';
+export interface IJwtPayload {
+  id: string;
+  email: string;
+  phoneNumber: string;
+}
+
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
     private userService: UsersService,
     private storageService: StorageService,
-    private memberShipService: MemberShipsService
+    private jwtService: JwtService,
+    private configService: ConfigService,
+    private memberShipService: MemberShipsService,
+    private groupPermissionService: GroupPermissonService
   ) { }
-  async signUp(dto: CreateAuthDto): Promise<User | any> {
 
+  private async getTokens(user: User): Promise<TokenModel> {
+    const payload: IJwtPayload = {
+      phoneNumber: user.phoneNumber,
+      email: user.email,
+      id: user.id,
+    };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(
+        payload,
+        {
+          secret: this.configService.get("JWT_REFRESH_TOKEN_SECRET"),
+          expiresIn: 1000 * 60 * 60 * 24 * 7, // 7 days
+        })
+    ])
+    return new TokenModel(accessToken, refreshToken)
+  }
 
-    const userDatabase = await this.userService.findOneNotException(dto.user.uid);
-    if (userDatabase) {
-      throw new ConflictException({
-        message: 'Account already exists for user ' + dto.user.uid,
+  private async getAccessToken(user: User): Promise<TokenModel> {
+    const payload: IJwtPayload = {
+      phoneNumber: user.phoneNumber,
+      email: user.email,
+      id: user.id,
+    };
+    const accessToken = await this.jwtService.signAsync(payload);
+    return new TokenModel(accessToken)
+  }
+  async validateJwt(payload: IJwtPayload): Promise<User> {
+    return await this.userService.findOne(payload.id);
+  }
+
+  async validateUser(payload: string, pass: string): Promise<any> {
+    const user = await this.userService.findOneBy("email" || "phoneNumber", payload);
+
+    if (!user) throw new ApiException(ErrorMessages.USER_NOT_FOUND);
+
+    // const isMatch = await bcrypt.compare(pass, user.password);
+    const isMatch = await user.comparePassword(pass);
+    return isMatch ? user : null;
+  }
+
+  async refreshToken(myUser: User): Promise<any> {
+    return await this.getAccessToken(myUser);
+  }
+
+  async validateUserRefreshToken(refreshToken: string): Promise<void> {
+    try {
+      await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET')
       })
-    }
-    else {
-      // upload ảnh
-      const image = await this.storageService.uploadFile(ImageTypes.CARD_USER, dto.photoURL);
-      const memberShip = await this.memberShipService.findOne(dto.memberShipId);
-      const newUser = this.userRepository.create({
-        ...dto,
-        uid: dto.user.uid,
-        photoURL: image,
-        memberShip: memberShip,
-        phoneNumber: dto.user?.phone_number || dto.phone_number,
-        password: dto.password,
-        email: dto.user?.email || dto.email,
-      });
-
-      return await this.userRepository.save(newUser);
-    }
-  }
-  async signIn(req: any): Promise<User | any> {
-
-    const user = await this.userRepository.findOne({
-      where: {
-        phoneNumber: req.phoneNumber,
-        email: req.email,
+    } catch (e) {
+      switch (e.name) {
+        case 'TokenExpiredError':
+          throw new ApiException(ErrorMessages.REFRESH_TOKEN_EXPIRED)
+        case 'JsonWebTokenError':
+          throw new ApiException(ErrorMessages.REFRESH_TOKEN_INVALID)
+        default:
+          throw new UnauthorizedException()
       }
-    })
-    if (!user) throw new NotFoundException({
-      statusCode: 404,
-      message: 'Không tìm thấy tài khoản'
-    });
-    if (user && !(await user.comparePassword(req.password))) {
-      throw new BadRequestException('Password does not match with the password of the user');
     }
-    return user;
   }
-  async forgotPassword(req: any): Promise<User | any> {
-    const user = await this.userService.findOneWithPhoneNumber(req.user.phoneNumber);
 
-    const merged = this.userRepository.merge(user, {
-      password: req.password
-    });
-    const updated = await this.userRepository.update(user.uid, merged);
-    if (!updated) throw new BadRequestException('Update user failed');
-    // const merged = await this.userRepository.update(user.uid, {
-    //   ...user,
-    //   password
-    // })
-    return merged;
+  async signUpSystem(dto: SignUpDTO): Promise<User | any> {
+
+    let filePath: string = "";
+    try {
+      const image = await this.storageService.uploadFile(ImageTypes.CARD_USER, dto.photoURL);
+      filePath = image;
+      const memberShip = await this.memberShipService.findOne(dto.memberShipId);
+      const groupPermission = await this.groupPermissionService.findByName("USER");
+      return await this.userService.createUserSignUp({
+        ...dto,
+        photoURL: image,
+        memberShip,
+        groupPermission,
+      });
+    } catch (error) {
+
+      await this.storageService.deleteFile(filePath)
+      throw new BadRequestException(error.message);
+    }
+  }
+  // async signUpSocial(dto: SignUpSocialDTO): Promise<User> {
+  //   const memberShip = await this.memberShipService.findOneByName("Cá nhân");
+  //   const groupPermission = await this.groupPermissionService.findByName("USER");
+  //   const createUser = await this.userService.createUserSignUp({
+  //     ...dto,
+  //     phoneNumber: dto.phoneNumber,
+  //     password: null,
+  //     memberShip
+  //   });
+  //   return createUser;
+  // }
+  async signIn(dto: SignInDTO): Promise<User | any> {
+    if ((dto.email || dto.phoneNumber) && dto.password) {
+      // Xác định trường cần tìm kiếm dựa trên có giá trị nào trong "dto"
+      const findOneWith: findOneWith = dto.email ? "email" : "phoneNumber";
+      const value = dto.email || dto.phoneNumber;
+
+      // Tìm kiếm người dùng bằng trường xác định và giá trị
+      const user = await this.userService.findOneBy(findOneWith, value);
+
+      if (user && !(await user.comparePassword(dto.password))) {
+        throw new BadRequestException('Password does not match with the password of the user');
+      }
+      const getTokens = await this.getTokens(user);
+      return {
+        user,
+        ...getTokens
+      };
+    }
+
+    throw new BadRequestException('Invalid input');
+  }
+
+  async forgotPassword(dto: ForgotPasswordDTO): Promise<User | any> {
+    const updated = await this.userService.updatePassword(dto);
+    return updated;
+
   }
 
   async resetPassword(dto: ChangePasswordDTO): Promise<User | any> {
-    const user = await this.userService.findOne(dto.user.uid);
+    const user = await this.userService.getUserById(dto.user.id);
 
     const check = await user.comparePassword(dto.oldPassword);
-    if (user?.phoneNumber && !check)//check old password is correct
+    if (user?.phoneNumber && !check || user?.email && !check)//check old password is correct
     {
       throw new BadRequestException('Reset password failed, old password is incorrect');
     }
-    const merged = this.userRepository.merge(user, {
+    return await this.userService.updatePassword({
+      user,
       password: dto.newPassword
-    })
-    const updated = await this.userRepository.update(user.uid, merged);
-    if (!updated) throw new BadRequestException("Update password failed");
-    return merged;
+    });
   }
 
 }

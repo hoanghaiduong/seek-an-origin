@@ -23,6 +23,8 @@ import { ProductModule } from './product/product.module';
 import { BusinessModule } from './business/business.module';
 import { MaterialsModule } from './materials/materials.module';
 import { GroupPermissonModule } from './group-permisson/group-permisson.module';
+import { MembersModule } from './members/members.module';
+import { FactoriesModule } from './factories/factories.module';
 
 
 
@@ -53,6 +55,8 @@ import { GroupPermissonModule } from './group-permisson/group-permisson.module';
     BusinessModule,
     MaterialsModule,
     GroupPermissonModule,
+    MembersModule,
+    FactoriesModule,
 
   ],
   controllers: [AppController],

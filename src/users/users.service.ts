@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { ILike, Repository } from 'typeorm';
+import { FindOneOptions, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { PaginationModel } from 'src/common/pagination/pagination.model';
 import { Pagination } from 'src/common/pagination/pagination.dto';
 import { Meta } from 'src/common/pagination/meta.dto';
@@ -13,6 +13,13 @@ import { StorageService } from 'src/storage/storage.service';
 import { ImageTypes } from 'src/common/enum/file';
 import { MemberShipsService } from 'src/member-ships/member-ships.service';
 import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid'
+import { CreateMemberDTO } from 'src/members/dto/create-member.dto';
+import { ApiException } from 'src/common/exception/api.exception';
+import { ErrorMessages } from 'src/exception/error.code';
+import { SignUpDTO } from 'src/auth/dto/sign-up.dto';
+import { ForgotPasswordDTO } from 'src/auth/dto/forgot-password.dto';
+export type findOneWith = "phoneNumber" | "email";
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User)
@@ -23,6 +30,11 @@ export class UsersService {
 
   }
 
+  async createMember(createMemberDto: CreateMemberDTO): Promise<User> {
+    const uuid = uuidv4();
+    return uuid;
+  }
+
   async findAll(pagination: Pagination): Promise<PaginationModel<User>> {
     const search = ILike(`%${pagination.search}%`);
     const [entities, itemCount] = await this.userRepository.findAndCount({
@@ -31,7 +43,7 @@ export class UsersService {
       },
       take: pagination.take,
       skip: pagination.skip,
-      relations: ['memberShip'],
+      relations: ['memberShip', 'groupPermission'],
       where: [
         {
           phoneNumber: search,
@@ -49,16 +61,45 @@ export class UsersService {
     return new PaginationModel<User>(entities, meta);
   }
 
-  async findOne(uid: string): Promise<User> {
+  async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: {
-        uid
+        id
       },
-      relations: ['memberShip'],
+      relations: ['memberShip', 'groupPermission'],
     })
-    if (!user) throw new NotFoundException(`User ${uid} not found`);
+    if (!user) throw new NotFoundException(`User ${id} not found`);
     return user
   }
+  async getUserById(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id
+      }
+    })
+    if (!user) throw new ApiException(ErrorMessages.USER_NOT_FOUND, 'user not found');
+    return user
+  }
+  async createUserSignUp(user: SignUpDTO): Promise<User> {
+    const createUser = this.userRepository.create(user);
+    return await this.userRepository.save(createUser);
+  }
+  async findOneBy(findOneWith: findOneWith, value: string): Promise<User | null> {
+    const whereCondition: Record<string, string> = {};
+    whereCondition[findOneWith] = value;
+
+    const user = await this.userRepository.findOne({
+      where: whereCondition
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User ${findOneWith} ${value} not found`);
+    }
+
+    return user;
+  }
+
+
   async findOneWithPhoneNumber(phoneNumber: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: {
@@ -68,15 +109,7 @@ export class UsersService {
     if (!user) throw new NotFoundException(`Phone ${phoneNumber} not found`);
     return user
   }
-  async findOneNotException(uid: string): Promise<User | boolean> {
-    const user = await this.userRepository.findOne({
-      where: {
-        uid
-      }
-    })
-    if (!user) return false;
-    return user
-  }
+
   // async update(dto: UpdateUserDto): Promise<User | any> {
   //   var photoURLglobal: string;
   //   var photoCertGlobal: string;
@@ -164,7 +197,17 @@ export class UsersService {
   //     });
   //   }
   // }
-
+  async updatePassword(dto: ForgotPasswordDTO): Promise<User> {
+    try {
+      const user = await this.getUserById(dto.user.id);
+      user.password = dto.password;
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw new BadRequestException({
+        message: error.message,
+      })
+    }
+  }
   async update(dto: UpdateUserDto): Promise<User | any> {
     let tempPhotoURL: string | null = null;
     let tempCertificationPhoto: string | null = null;
@@ -233,7 +276,7 @@ export class UsersService {
       });
 
       // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
-      const updated = await this.userRepository.update(user.uid, merged);
+      const updated = await this.userRepository.update(user.id, merged);
 
       // Trả về thông tin cập nhật
       return merged;

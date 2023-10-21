@@ -19,10 +19,7 @@ export class FirebaseAuthGuard implements CanActivate {
                 message: 'Token is required'
             }); // No Bearer token found in the header
         }
-
         const token = authHeader.split(' ')[1];
-
-
         try {
             const decodedToken = await this.firebaseService.verifyIdToken(token);
 

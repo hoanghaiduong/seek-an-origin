@@ -1,15 +1,20 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { DateTimeEntity } from 'src/common/entities/DateTime.entity';
 import { MemberShip } from 'src/member-ships/entities/member-ship.entity';
+import { GroupPermisson } from 'src/group-permisson/entities/group-permisson.entity';
+import { v4 as uuidv4 } from 'uuid'
+import { Factory } from 'src/factories/entities/factory.entity';
 @Entity()
 export class User extends DateTimeEntity {
-    @PrimaryColumn({
-        nullable: false,
-    })
-    uid: string;
+    @PrimaryGeneratedColumn('uuid')
 
+    id: string;
+    // @Column({
+    //     nullable: true,
+    // })
+    // uid: string;
     @Column({
         nullable: false,
         unique: true
@@ -57,7 +62,6 @@ export class User extends DateTimeEntity {
     }
 
 
-
     @ManyToOne(() => MemberShip, memberShip => memberShip.users)
     memberShip: MemberShip;
 
@@ -68,7 +72,24 @@ export class User extends DateTimeEntity {
     //vùng sản xuất (+)
     //thuộc nhà xưởng (+)
 
+    //********************************Thêm thành viên********************************* */
+    @ManyToOne(() => Factory, { nullable: true })
+    factory: Factory
 
+
+
+    @Column({
+        nullable: true,
+    })
+    province: string
+    @Column({
+        nullable: true,
+    })
+    district: string
+    @Column({
+        nullable: true,
+    })
+    ward: string;
     @Column({
         nullable: true,
     })
@@ -85,4 +106,16 @@ export class User extends DateTimeEntity {
         nullable: true,
     })
     careerTitle: string; //Chức danh 
+
+    //nhóm quyền
+    @ManyToOne(() => GroupPermisson, groupPermission => groupPermission.users, { nullable: true })
+    groupPermission: GroupPermisson
+
+    // //người quản lý
+    // @ManyToOne(() => User, user => user.userManagers, { onDelete: 'CASCADE', nullable: true, eager: true })
+    // @JoinColumn({ name: 'uid' })
+    // userManager?: User;
+
+    // @OneToMany(() => User, user => user.userManager, { nullable: true })
+    // userManagers: User[];
 }

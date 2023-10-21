@@ -1,7 +1,9 @@
-import { SetMetadata, applyDecorators } from '@nestjs/common';
+import { SetMetadata, UseGuards, applyDecorators } from '@nestjs/common';
+import { RoleAuthGuard } from 'src/auth/guard/Role.guard';
 
-export const Roles = (...args: string[]) => {
+export const Roles = (...role: string[]) => {
     return applyDecorators(
-        SetMetadata('roles', args)
+        SetMetadata('roles', role),
+        UseGuards(RoleAuthGuard)
     )
 }
