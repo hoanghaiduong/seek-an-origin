@@ -103,10 +103,14 @@ export class AuthService {
 
   async signUpSystem(dto: SignUpDTO): Promise<User | any> {
 
-    let filePath: string = "";
+    let image: string = "";
     try {
-      const image = await this.storageService.uploadFile(ImageTypes.CARD_USER, dto.photoURL);
-      filePath = image;
+
+      if (dto.photoURL) {
+        image = await this.storageService.uploadFile(ImageTypes.CARD_USER, dto.photoURL);
+      }
+
+
       const memberShip = await this.memberShipService.findOne(dto.memberShipId);
       const groupPermission = await this.groupPermissionService.findByName("USER");
       return await this.userService.createUserSignUp({
@@ -117,7 +121,7 @@ export class AuthService {
       });
     } catch (error) {
 
-      await this.storageService.deleteFile(filePath)
+      await this.storageService.deleteFile(image)
       throw new BadRequestException(error.message);
     }
   }
