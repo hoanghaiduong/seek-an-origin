@@ -8,9 +8,9 @@ export class SignUpDTO {
     @ApiProperty({
         required: false
     })
-    @IsEmail({
+    // @IsEmail({
 
-    }, { message: 'Please enter a valid email address' })
+    // }, { message: 'Please enter a valid email address' })
     email: string;
     @ApiProperty({
         required: true
