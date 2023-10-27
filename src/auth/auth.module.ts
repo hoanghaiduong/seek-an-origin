@@ -26,7 +26,7 @@ import { GroupPermissonModule } from 'src/group-permisson/group-permisson.module
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: '1y' },
       }),
       inject: [ConfigService],
     })
